@@ -7,22 +7,57 @@ export type USER = {
 }
 
 export type BLOG = {
-  id?: number
-  title: string
-  slug?: string
-  content: string
-  is_published?: boolean
-  created_at?: string
-  updated_at?: string
-  comments_count?: number
-  user?: USER
-  comments?: COMMENT[]
-  editMode?: boolean
+    id?: number
+    slug?: string
+    title?: string
+    content?: string
+    comments_count?: number
+    created_at?: string
+    created_at_readable?: string
+    updated_at?: string
+    updated_at_readable?: string
+    image?: string
+    image_thumb?: string
+    user?: USER
+    last_comment?: COMMENT
+    comments?: COMMENT[]
+    editMode?: boolean
 }
 
 export type COMMENT = {
   id?: number
-  content: string
+  content?: string
+  created_at?: string
+  created_at_readable?: string
   user?: USER
-  editMode?: boolean
+}
+
+export type LINKS = {
+  first: string | null
+  last: string | null
+  prev: string | null
+  next: string | null
+}
+export type META_LINKS = {
+  url : string
+  label : string
+  active : boolean
+}[]
+
+export type META = {
+  current_page: number
+  from: number
+  last_page: number
+  links: META_LINKS
+  path: string
+  per_page: number
+  to: number
+  total: number
+} 
+
+
+export type POSTS_RESPONSE = {
+  data: BLOG[]
+  links: LINKS
+  meta: META
 }

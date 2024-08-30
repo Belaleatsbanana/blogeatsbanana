@@ -3,20 +3,20 @@ import HomeIcon from './icons/HomeIcon.vue';
 import PostIcon from './icons/PostIcon.vue';
 import MyPostsIcon from './icons/MyPostsIcon.vue';
 import CommentsIcon from './icons/CommentsIcon.vue';
+import { ref } from 'vue';
+
+const isMyPostsDisabled = ref(true);
+const isCommentsDisabled = ref(true);
 </script>
 
 <template>
     <main class="navbar-container">
-
         <header class="navbar-header">
-
             <img src="../assets/blog.jpg" alt="logo" class="navbar-img" />
             <h5>BananaBlog</h5>
-
         </header>
 
         <nav class="navbar">
-
             <ul class="column-bar">
                 <li><router-link to="/home">
                         <HomeIcon class="icon" height="20px" width="20px" />
@@ -26,16 +26,29 @@ import CommentsIcon from './icons/CommentsIcon.vue';
                         <PostIcon class="icon" height="25px" width="25px" />
                         <span>New Post</span>
                     </router-link></li>
-                <li><router-link to="/myposts">
+
+                <li>
+                    <router-link v-if="!isMyPostsDisabled" to="/myposts">
                         <MyPostsIcon class="icon" height="25px" width="25px" />
                         <span>My Posts</span>
-                    </router-link></li>
-                <li><router-link to="/comments">
+                    </router-link>
+                    <span v-else class="disabled">
+                        <MyPostsIcon class="icon" height="25px" width="25px" />
+                        <span>My Posts</span>
+                    </span>
+                </li>
+
+                <li>
+                    <router-link v-if="!isCommentsDisabled" to="/comments">
                         <CommentsIcon class="icon" height="25px" width="25px" />
                         <span>Comments</span>
-                    </router-link></li>
+                    </router-link>
+                    <span v-else class="disabled">
+                        <CommentsIcon class="icon" height="25px" width="25px" />
+                        <span>Comments</span>
+                    </span>
+                </li>
             </ul>
-
         </nav>
 
         <footer>
@@ -72,8 +85,6 @@ import CommentsIcon from './icons/CommentsIcon.vue';
     height: 100%;
 }
 
-
-
 .column-bar {
     margin-top: 3em;
     display: flex;
@@ -86,7 +97,6 @@ import CommentsIcon from './icons/CommentsIcon.vue';
     min-width: 150px;
     width: 100%;
     text-align: left;
-
 }
 
 .column-bar li {
@@ -98,10 +108,10 @@ import CommentsIcon from './icons/CommentsIcon.vue';
     align-items: center;
 }
 
-.column-bar li a {
+.column-bar li a,
+.column-bar li .disabled {
     color: var(--color-text-1);
     transition: color 0.3s ease;
-
     text-decoration: none;
     display: flex;
     justify-content: left;
@@ -111,7 +121,21 @@ import CommentsIcon from './icons/CommentsIcon.vue';
     padding: 10px 10px;
     box-sizing: border-box;
     gap: 5px;
+}
 
+.column-bar li .disabled {
+    border-radius: 5px;
+    background-color: gray;
+    cursor: not-allowed;
+}
+
+.column-bar li:hover .disabled {
+    color:red;
+    cursor: not-allowed;
+}
+
+.column-bar li:hover .disabled .icon {
+    fill: rgb(255, 0, 0);
 }
 
 .column-bar li a.router-link-exact-active {
@@ -119,7 +143,6 @@ import CommentsIcon from './icons/CommentsIcon.vue';
     color: var(--color-text-2);
     border-radius: 5px;
     box-shadow: 2px 2px 15px 2px rgba(0, 0, 0, 0.2);
-    /* Subtle shadow in bottom-right corner */
 }
 
 .column-bar li:hover a {
@@ -127,14 +150,11 @@ import CommentsIcon from './icons/CommentsIcon.vue';
     color: var(--color-text-2);
     border-radius: 5px;
     box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.2);
-    /* Full shadow on hover */
 }
 
-/* Ensure hover takes precedence over active */
 .column-bar li a.router-link-exact-active:hover {
     box-shadow: 0 0 15px 5px rgba(0, 0, 0, 0.2);
 }
-
 
 .icon {
     fill: var(--color-text-1);

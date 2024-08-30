@@ -3,6 +3,11 @@ import CommentsIcon from "@/components/icons/CommentsIcon.vue";
 import router from "@/router";
 import type { BLOG } from "@/util/types/types";
 import EditIcon from "./icons/EditIcon.vue";
+import { ref } from "vue";
+
+import defaultImage from "@/assets/BananaBlog.png";
+
+const imgSrc = ref<string>(defaultImage);
 
 defineProps<{
     blogs: BLOG[];
@@ -21,12 +26,13 @@ const editBlog = (slug?: string) => {
         router.push({ name: "EditPost", params: { slug } });
     }
 };
-
 </script>
 
 <template>
     <main class="grid-container">
         <div class="grid-item" v-for="blog in blogs" :key="blog.slug" @click="openBlog(blog.slug)">
+            <img v-if="blog.image_thumb" :src="blog.image_thumb" alt="Blog image" class="blog-image" />
+            <img v-else :src="imgSrc" alt="Blog img" class="blog-image" />
             <div class="item-content">
                 <h2 class="item-title">{{ blog.title }}</h2>
                 <p class="item-content">{{ blog.content }}</p>
@@ -61,14 +67,15 @@ p {
 .grid-container {
     margin-top: 2em;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
     gap: 25px 10px;
 }
 
 .grid-item {
     width: auto;
-    max-width: 340px;
-    height: 270px;
+    min-width: 330px;
+    max-width: 600px;
+    height: 420px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -82,45 +89,38 @@ p {
 }
 
 .grid-item:hover {
-    /* 4o8l fa5er gdn */
     transform: scale(1.05) rotateX(5deg) rotateY(5deg);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
 }
 
+.blog-image {
+    width: 100%;
+    height: 150px; /* Fixed height for images */
+    object-fit: cover;
+    border-radius: 4px;
+}
+
 .item-title {
     display: -webkit-box;
-    /* Needed for WebKit (Chrome, Safari) */
     -webkit-line-clamp: 2;
     line-clamp: 2;
-    /* WebKit specific for multi-line ellipsis */
     -webkit-box-orient: vertical;
-    /* Required for WebKit */
     overflow: hidden;
-    /* Hide overflowing text */
     text-overflow: ellipsis;
-    /* Add ellipsis (...) */
     line-height: 1.5;
-    /* Adjust line height as needed */
     max-height: 4rem;
-    /* (line-height * number of lines) */
     white-space: normal;
-    /* Ensure text can wrap */
 }
 
 .item-content {
     display: -webkit-box;
     line-clamp: 5;
     -webkit-line-clamp: 5;
-    /* Number of lines to display */
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Optionally set max-width or width */
     max-width: 100%;
     margin-bottom: 1em;
-}
-
-.item-content {
     flex: 1;
 }
 
@@ -160,7 +160,6 @@ p {
     transform: scale(1.2);
     background-color: var(--color-background-1);
     z-index: 10;
-
 }
 
 .comments-container {
@@ -168,6 +167,5 @@ p {
     justify-content: center;
     align-items: center;
     gap: 0.2rem;
-
 }
 </style>

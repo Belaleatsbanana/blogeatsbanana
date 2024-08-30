@@ -111,6 +111,10 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('token')
 
+  if(to.name === 'Comments' || to.name === 'MyPosts') {
+    return next({ name: 'Home' })
+  }
+
   if (to.meta.requiresAuth && !isAuthenticated) {
     localStorage.setItem('lastRoute', to.path)
     next({ name: 'Login' })

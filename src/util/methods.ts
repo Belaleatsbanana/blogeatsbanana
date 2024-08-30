@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { API_URL } from './constants'
-import type { BLOG, USER } from './types/types'
+import type { BLOG, POSTS_RESPONSE, USER } from './types/types'
 
 const nullUser: USER = {
   id: 0,
@@ -25,19 +25,18 @@ export const importUser = async (): Promise<USER> => {
   }
 }
 
-export const importBlogs = async (): Promise<BLOG[]> => {
+export const importBlogs = async (page = `${API_URL}/posts?page=1`): Promise<POSTS_RESPONSE | null> => {
   try {
-    const response = await axios.get('/posts', {
-      baseURL: API_URL,
+    const response = await axios.get(`${page}`, {
       headers: {
         Authorization: 'Bearer ' + localStorage.getItem('token')
       }
     })
 
-    return response.data as BLOG[]
+    return response.data
   } catch (err) {
     console.error(err)
-    return []
+    return null
   }
 }
 
@@ -50,7 +49,7 @@ export const importBlog = async (slug: string): Promise<BLOG> => {
       }
     })
 
-    return response.data as BLOG
+    return response.data.data as BLOG
   } catch (err) {
     console.error(err)
     return {

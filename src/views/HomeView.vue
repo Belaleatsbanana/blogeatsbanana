@@ -1,25 +1,41 @@
 <script setup lang="ts">
 import ListBlogs from '@/components/ListBlogs.vue';
+import PaginationBar from '@/components/PaginationBar.vue';
 import { importBlogs } from '@/util/methods';
-import type { BLOG } from '@/util/types/types';
+import type { BLOG, POSTS_RESPONSE } from '@/util/types/types';
 import { onMounted, ref } from 'vue';
 
+const ApiResponse = ref<POSTS_RESPONSE>();
 const Blogs = ref<BLOG[]>([]);
-const userId = parseInt(localStorage.getItem('userId') as string);
+const isLoading = ref(true);
 
 onMounted(async () => {
-    Blogs.value = await importBlogs();
-
-    Blogs.value = Blogs.value.map((blog) => {
-        if (blog.user?.id === userId) {
-            blog.editMode = true;
-        } else {
-            blog.editMode = false;
-        }
-        return blog;
-    });
-    console.log(Blogs.value);
+    
+    try {
+        ApiResponse.value = await importBlogs() as POSTS_RESPONSE;
+        Blogs.value = ApiResponse.value.data;
+    } catch (error) {
+        console.error('Error fetching blogs:', error);
+        // Handle error (e.g., show an error message)
+    } finally {
+        isLoading.value = false; // Set loading to false once data is fetched
+    }
 });
+
+// const userId = parseInt(localStorage.getItem('userId') as string);
+
+const setPage = (pageUrl: string | null) => {
+    console.log(pageUrl);
+    
+    if (pageUrl) {
+        console.log('man ', pageUrl);
+        importBlogs(pageUrl).then((response) => {
+            ApiResponse.value = response as POSTS_RESPONSE;
+            Blogs.value = ApiResponse.value.data;
+        });
+        Blogs.value = ApiResponse.value?.data as BLOG[];
+    }
+};
 </script>
 
 <template>
@@ -29,7 +45,13 @@ onMounted(async () => {
             <ListBlogs :blogs="Blogs" />
 
         </section>
-
+        <footer v-if="!isLoading">
+            <PaginationBar :links="ApiResponse?.links" 
+            :meta_links="ApiResponse?.meta.links" 
+            @pageChange="setPage"
+            />
+            
+        </footer>
     </main>
 
 </template>
@@ -64,5 +86,12 @@ p {
     padding: 1.5rem;
     width: 100%;
     background-color: var(--color-background-1);
+}
+
+footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 3em;
 }
 </style>
