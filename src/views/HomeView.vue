@@ -13,12 +13,11 @@ onMounted(async () => {
     
     try {
         ApiResponse.value = await importBlogs() as POSTS_RESPONSE;
-        Blogs.value = ApiResponse.value.data;
+        Blogs.value = ApiResponse.value.data as BLOG[];
     } catch (error) {
         console.error('Error fetching blogs:', error);
-        // Handle error (e.g., show an error message)
     } finally {
-        isLoading.value = false; // Set loading to false once data is fetched
+        isLoading.value = false;
     }
 });
 

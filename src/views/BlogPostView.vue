@@ -10,6 +10,10 @@ import axios from 'axios';
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
+import defaultImage from "@/assets/BananaBlog.png";
+
+const imgSrc = ref<string>(defaultImage);
+
 const route = useRoute();
 
 const slug = ref<string>();
@@ -195,6 +199,8 @@ onMounted(() => {
 
     importBlog(slug.value).then((data) => {
         blogPost.value = data;
+
+        blogPost.value.editMode = blogPost.value.user?.id === userId;
     });
     const windowHeight = window.innerHeight;
     const windowWidth = window.innerWidth;
@@ -214,14 +220,10 @@ onUnmounted(() => {
 <template>
     <main>
         <section class="content">
+            <img :src="blogPost?.image ? blogPost.image : imgSrc" alt="Blog Image" class="post-image" />
             <div class="header-wrapper">
                 <h1>{{ blogPost?.title }}</h1>
                 <div class="content-header">
-                    <div class="content-header-items">
-                        <span>By {{ blogPost?.user?.name }}</span>
-                        <span>Published: {{ blogPost?.created_at?.split('T')[0] }}</span>
-                        <span>Last Edited: {{ blogPost?.updated_at?.split('T')[0] }}</span>
-                    </div>
                     <div v-if="blogPost?.editMode" class="action-icons">
                         <div @click="editBlog(blogPost?.slug)" class="edit-icon" title="Edit Blog">
                             <EditIcon />
@@ -229,6 +231,11 @@ onUnmounted(() => {
                         <div @click="deleteBlog(blogPost?.slug)" class="delete-icon" title="Delete Blog">
                             <DeleteIcon />
                         </div>
+                    </div>
+                    <div class="content-header-items">
+                        <span>By {{ blogPost?.user?.name }}</span>
+                        <span>Published: {{ blogPost?.created_at?.split('T')[0] }}</span>
+                        <span>Last Edited: {{ blogPost?.updated_at?.split('T')[0] }}</span>
                     </div>
                 </div>
             </div>
@@ -272,12 +279,20 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    max-width: 900px;
+    max-width: 1100px;
     margin: 20px auto;
+}
+
+.post-image {
+    width: 100%;
+    height: 300px; /* Fixed height for images */
+    object-fit: cover;
+    border-radius: 4px;
 }
 
 .header-wrapper {
@@ -305,9 +320,9 @@ main {
 }
 
 .action-icons {
+    padding: 0.5em;
     display: flex;
     gap: 10px;
-    position: absolute;
     top: -20px;
     right: -10px;
 }

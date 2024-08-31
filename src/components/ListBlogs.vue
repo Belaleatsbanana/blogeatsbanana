@@ -3,15 +3,28 @@ import CommentsIcon from "@/components/icons/CommentsIcon.vue";
 import router from "@/router";
 import type { BLOG } from "@/util/types/types";
 import EditIcon from "./icons/EditIcon.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import defaultImage from "@/assets/BananaBlog.png";
 
-const imgSrc = ref<string>(defaultImage);
-
-defineProps<{
+const props = defineProps<{
     blogs: BLOG[];
 }>();
+
+const imgSrc = ref<string>(defaultImage);
+const userId = parseInt(localStorage.getItem("userId") as string);
+
+const gridBlogs = computed(() => {
+    console.log(props.blogs);
+        
+    return props.blogs.map((blog) => {
+        return {
+            ...blog,
+            editMode: blog.user?.id === userId
+        };
+    });
+});
+
 
 const openBlog = (slug?: string) => {
     if (slug) {
@@ -30,12 +43,13 @@ const editBlog = (slug?: string) => {
 
 <template>
     <main class="grid-container">
-        <div class="grid-item" v-for="blog in blogs" :key="blog.slug" @click="openBlog(blog.slug)">
+        <div class="grid-item" v-for="blog in gridBlogs" :key="blog.slug" @click="openBlog(blog.slug)">
             <img v-if="blog.image_thumb" :src="blog.image_thumb" alt="Blog image" class="blog-image" />
             <img v-else :src="imgSrc" alt="Blog img" class="blog-image" />
             <div class="item-content">
                 <h2 class="item-title">{{ blog.title }}</h2>
                 <p class="item-content">{{ blog.content }}</p>
+                
             </div>
             <div class="blog-footer">
                 <div class="in-liner">
@@ -50,10 +64,20 @@ const editBlog = (slug?: string) => {
                         <CommentsIcon /> <span>{{ blog.comments_count }}</span>
                     </div>
                 </div>
+                <div v-if="blog.last_comment" class="last-comment">
+                    <h3>Most Recent Comment</h3>
+                    <span class="last-comment-content"> {{blog.last_comment.content }} </span>
+                    <br/>
+                    <small>— {{ blog.last_comment.user?.name }}, {{ blog.last_comment.created_at_readable }}</small>
+                </div>
+                <div v-else class="last-comment">
+                    <span class="last-comment-content">Be the first to comment!</span>
+                    </div>  
             </div>
         </div>
     </main>
 </template>
+
 
 <style scoped>
 p {
@@ -62,6 +86,9 @@ p {
     font-size: 0.875rem;
     color: var(--color-text-1);
     font-weight: 400;
+}
+h3  {
+    text-align: center;
 }
 
 .grid-container {
@@ -75,7 +102,8 @@ p {
     width: auto;
     min-width: 330px;
     max-width: 600px;
-    height: 420px;
+    height: auto; /* Adjust height to accommodate more content */
+    min-height: 520px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -95,7 +123,7 @@ p {
 
 .blog-image {
     width: 100%;
-    height: 150px; /* Fixed height for images */
+    height: 150px;
     object-fit: cover;
     border-radius: 4px;
 }
@@ -122,6 +150,25 @@ p {
     max-width: 100%;
     margin-bottom: 1em;
     flex: 1;
+    position: relative;
+}
+
+.last-comment {
+    font-size: 0.75rem;
+    min-height: 120px;
+    color: var(--color-text-1);
+    margin-top: 1em;
+    border-top: 1px solid var(--color-background-1);
+    padding-top: 0.5em;
+}
+
+.last-comment-content {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .blog-footer {
@@ -129,13 +176,11 @@ p {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    position: absolute;
     bottom: 10px;
     left: 10px;
     font-size: 0.875rem;
     color: var(--color-text-1);
     padding: 2px 4px;
-    margin-top: 1em;
     border-radius: 2px;
 }
 
@@ -143,8 +188,8 @@ p {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 4px 0;
     gap: 1rem;
-    margin: 0.5rem 1rem 0 0;
 }
 
 .edit-icon {
@@ -166,6 +211,5 @@ p {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.2rem;
 }
 </style>

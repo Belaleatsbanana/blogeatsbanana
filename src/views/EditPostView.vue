@@ -23,8 +23,8 @@ onMounted(async () => {
     slug.value = route.params.slug as string;
 
     await importBlog(slug.value).then((result) => {
-        title.value = result.title;
-        content.value = result.content;
+        title.value = result.title as string;
+        content.value = result.content as string;
     });
 });
 

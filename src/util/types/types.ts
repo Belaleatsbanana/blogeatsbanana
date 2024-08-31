@@ -1,3 +1,5 @@
+import { ref } from "vue"
+
 export type USER = {
   id?: number
   email?: string
@@ -23,6 +25,8 @@ export type BLOG = {
     comments?: COMMENT[]
     editMode?: boolean
 }
+
+export const BLOGS = ref<BLOG[]>()
 
 export type COMMENT = {
   id?: number
@@ -60,4 +64,8 @@ export type POSTS_RESPONSE = {
   data: BLOG[]
   links: LINKS
   meta: META
+}
+
+function ComputedRef<T>() {
+  throw new Error("Function not implemented.")
 }
