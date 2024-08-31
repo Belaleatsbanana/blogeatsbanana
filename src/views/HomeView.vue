@@ -13,10 +13,17 @@ const isLoading = ref(true);
 const selectedSort = ref('desc');
 
 onMounted(async () => {
+    
     if(localStorage.getItem('page')) {
+        isLoading.value = true;
+
         ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
         Blogs.value = ApiResponse.value.data as BLOG[];
         BLOGS.value = {apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string)};
+        console.log(ApiResponse.value.meta.links);
+        console.log('BLOGS', BLOGS.value);
+        isLoading.value = false;
+        return;
     }
     if(BLOGS.value?.page) {
         Blogs.value = BLOGS.value.apiResponse.data;
