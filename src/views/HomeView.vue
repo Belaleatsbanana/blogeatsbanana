@@ -1,46 +1,92 @@
 <script setup lang="ts">
 import ListBlogs from '@/components/ListBlogs.vue';
 import PaginationBar from '@/components/PaginationBar.vue';
+import { API_URL } from '@/util/constants';
 import { importBlogs } from '@/util/methods';
 import type { BLOG, POSTS_RESPONSE } from '@/util/types/types';
+import { BLOGS } from '@/util/types/types';
 import { onMounted, ref } from 'vue';
 
 const ApiResponse = ref<POSTS_RESPONSE>();
 const Blogs = ref<BLOG[]>([]);
 const isLoading = ref(true);
+const selectedSort = ref('desc');
 
 onMounted(async () => {
-    
+    if(localStorage.getItem('page')) {
+        ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
+        Blogs.value = ApiResponse.value.data as BLOG[];
+        BLOGS.value = {apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string)};
+    }
+    if(BLOGS.value?.page) {
+        Blogs.value = BLOGS.value.apiResponse.data;
+    }else{
     try {
         ApiResponse.value = await importBlogs() as POSTS_RESPONSE;
         Blogs.value = ApiResponse.value.data as BLOG[];
+        BLOGS.value = {apiResponse: ApiResponse.value, page: 1};
+        console.log('BLOGS', BLOGS.value);
+        
+    } catch (error) {
+        console.error('Error fetching blogs:', error);
+    } finally {
+        isLoading.value = false;
+    }}
+});
+
+// const userId = parseInt(localStorage.getItem('userId') as string);
+
+const setPage = async (pageUrl: string | null) => {
+    console.log(pageUrl);
+    
+    if (pageUrl) {
+        console.log('man ', pageUrl);
+
+        const pageNo = parseInt(pageUrl.split('page=')[1]);
+
+        try {
+        ApiResponse.value = await importBlogs(pageUrl) as POSTS_RESPONSE;
+        Blogs.value = ApiResponse.value.data as BLOG[];
+        BLOGS.value = {apiResponse: ApiResponse.value, page:  pageNo};
+        localStorage.setItem('page', pageNo.toString())
+        console.log('BLOGS', BLOGS.value);
+        
     } catch (error) {
         console.error('Error fetching blogs:', error);
     } finally {
         isLoading.value = false;
     }
-});
-
-// const userId = parseInt(localStorage.getItem('userId') as string);
-
-const setPage = (pageUrl: string | null) => {
-    console.log(pageUrl);
-    
-    if (pageUrl) {
-        console.log('man ', pageUrl);
-        importBlogs(pageUrl).then((response) => {
-            ApiResponse.value = response as POSTS_RESPONSE;
-            Blogs.value = ApiResponse.value.data;
-        });
-        Blogs.value = ApiResponse.value?.data as BLOG[];
+        
     }
 };
+
+const onSortChange = async () => {
+    isLoading.value = true;
+    try {
+        ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
+        Blogs.value = ApiResponse.value.data as BLOG[];
+        BLOGS.value = {apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string)};
+        console.log('BLOGS', BLOGS.value);
+    }
+    catch (error) {
+        console.error('Error fetching blogs:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 </script>
 
 <template>
     <main class="display-home">
         <section class="home-body">
+            <div class="home-header">
             <h1>Featured Blogs</h1>
+            <select name="sort" id="sort" v-model="selectedSort" @change="onSortChange">
+                <option value="desc">Newest</option>
+                <option value="asc">Oldest</option>
+            </select>
+        </div>
             <ListBlogs :blogs="Blogs" />
 
         </section>
@@ -71,13 +117,29 @@ p {
     font-weight: 400;
 }
 
+select {
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--color-text-1);
+    background-color: var(--color-background-1);
+    color: var(--color-text-1);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
 .display-home {
     display: flex;
-
     flex-direction: column;
 }
 
-
+.home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    width: 100%;
+    background-color: var(--color-background-1);
+}
 
 .home-body {
     display: flex;

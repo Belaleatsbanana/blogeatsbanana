@@ -26,7 +26,7 @@ export type BLOG = {
     editMode?: boolean
 }
 
-export const BLOGS = ref<BLOG[]>()
+export const BLOGS = ref<{apiResponse : POSTS_RESPONSE, page : number}>()
 
 export type COMMENT = {
   id?: number

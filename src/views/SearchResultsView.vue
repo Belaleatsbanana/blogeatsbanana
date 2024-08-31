@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import ListBlogs from '@/components/ListBlogs.vue';
-import { importBlogs } from '@/util/methods';
-import type { BLOG } from '@/util/types/types';
+import { BLOGS, type BLOG } from '@/util/types/types';
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -11,14 +10,14 @@ const route = useRoute();
 
 const userId = parseInt(localStorage.getItem('userId') as string);
 
-onMounted(async () => {
-    Blogs.value = await importBlogs();
+onMounted( () => {
+    Blogs.value = BLOGS.value?.apiResponse.data as BLOG[];
     console.log(route.query.q?.toString().toLowerCase());
 
     const searchQuery = route.query.q?.toString().toLowerCase() || '';
     filteredBlogs.value = Blogs.value.filter(blog =>
-        blog.title.toLowerCase().includes(searchQuery) ||
-        blog.content.toLowerCase().includes(searchQuery)
+        (blog.title as string).toLowerCase().includes(searchQuery) ||
+        (blog.content as string).toLowerCase().includes(searchQuery)
     );
     filteredBlogs.value.map(blog => {
         if (userId === blog.user?.id) {

@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue';
 import axios from 'axios';
-import { useRoute } from 'vue-router';
 import router from '@/router';
 import { API_URL, STATUS_CODES } from '@/util/constants';
 import PopUp from '@/components/PopUp.vue';
 
 import defaultImage from "@/assets/BananaBlog.png";
 import EditIcon from '@/components/icons/EditIcon.vue';
-
-const route = useRoute();
 
 const defaultimg = ref<string>(defaultImage);
 const blogImage = ref<string>();
@@ -85,16 +82,14 @@ const handleFileUpload = (event: Event) => {
     newImageFile.value = file;
     blogImage.value = URL.createObjectURL(file);
 
-    // Revoke the old object URL if it exists
     if (objectUrl) {
       URL.revokeObjectURL(objectUrl);
     }
-    objectUrl = blogImage.value; // Store the new object URL for later cleanup
+    objectUrl = blogImage.value; 
     console.log('Selected file:', file);
   }
 };
 
-// Cleanup the object URL when the component is destroyed
 onUnmounted(() => {
   if (objectUrl) {
     URL.revokeObjectURL(objectUrl);
