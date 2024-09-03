@@ -1,22 +1,29 @@
+dd
 <script setup lang="ts">
 import CommentsIcon from "@/components/icons/CommentsIcon.vue";
 import router from "@/router";
-import type { BLOG } from "@/util/types/types";
+import { type BLOG } from "@/util/types/types";
 import EditIcon from "./icons/EditIcon.vue";
+import HeartIcon from "./icons/HeartIcon.vue";
 import { computed, ref } from "vue";
 
 import defaultImage from "@/assets/BananaBlog.png";
+import { likeBlog } from "@/util/methods";
+
 
 const props = defineProps<{
     blogs: BLOG[];
 }>();
 
+
 const imgSrc = ref<string>(defaultImage);
 const userId = parseInt(localStorage.getItem("userId") as string);
 
+const likeAnimation = ref<string | null>(null);
+const likeAction = ref<string | null>(null);
+
 const gridBlogs = computed(() => {
-    console.log(props.blogs);
-        
+
     return props.blogs.map((blog) => {
         return {
             ...blog,
@@ -33,12 +40,48 @@ const openBlog = (slug?: string) => {
     }
 };
 
+
 const editBlog = (slug?: string) => {
     if (slug) {
         console.log(slug);
         router.push({ name: "EditPost", params: { slug } });
     }
 };
+
+
+const toggleLikeBlog = (slug: string) => {
+
+    if (likeAnimation.value) return;
+
+    const blog = props.blogs.find(blog => blog.slug === slug);
+
+    if (blog) {
+        likeAnimation.value = slug;
+        likeAction.value = blog.liked_by_user ? 'unliking' : 'liking';
+
+        blog.liked_by_user = !blog.liked_by_user;
+        blog.likes_count = (blog.likes_count ?? 0) + (blog.liked_by_user ? 1 : -1);
+        setTimeout(() => {
+
+            likeAnimation.value = null;
+            likeAction.value = null;
+
+            likeBlog(slug).then((result) => {
+
+                if(result)
+                    console.log(result);
+                else
+                    blog.liked_by_user = !blog.liked_by_user;
+
+            }).catch(() => {
+                blog.liked_by_user = !blog.liked_by_user;
+            });
+
+        }, 1000); 
+    }
+};
+
+
 </script>
 
 <template>
@@ -49,34 +92,46 @@ const editBlog = (slug?: string) => {
             <div class="item-content">
                 <h2 class="item-title">{{ blog.title }}</h2>
                 <p class="item-content">{{ blog.content }}</p>
-                
             </div>
             <div class="blog-footer">
                 <div class="in-liner">
                     <span>Posted by: @{{ blog.user?.name }}</span>
-                    <div v-if="blog.editMode" class="edit-icon" @click.stop="editBlog(blog.slug)">
-                        <EditIcon />
+                    <div class="in-liner">
+                        <div v-if="blog.editMode" class="edit-icon" @click.stop="editBlog(blog.slug)">
+                            <EditIcon />
+                        </div>
+                        <div class="in-liner">
+                            <div class="heart-icon" @click.stop="toggleLikeBlog(blog.slug as string)" :class="{
+                                'liking': likeAction === 'liking' && likeAnimation === blog.slug,
+                                'unliking': likeAction === 'unliking' && likeAnimation === blog.slug
+                            }">
+                                <HeartIcon :strokeColor="blog.liked_by_user ? 'red' : 'black'"
+                                    :fill-color="blog.liked_by_user ? 'red' : 'white'" />
+                            </div>
+                            <span>{{ blog.likes_count }}</span>
+                        </div>
                     </div>
                 </div>
-                <div class="in-liner">
-                    <span>Published : {{ blog.created_at?.split('T')[0] }}</span>
-                    <div class="comments-container">
-                        <CommentsIcon /> <span>{{ blog.comments_count }}</span>
-                    </div>
+            </div>
+            <div class="in-liner">
+                <span>Published : {{ blog.created_at?.split('T')[0] }}</span>
+                <div class="comments-container">
+                    <CommentsIcon /> <span>{{ blog.comments_count }}</span>
                 </div>
-                <div v-if="blog.last_comment" class="last-comment">
-                    <h3>Most Recent Comment</h3>
-                    <span class="last-comment-content"> {{blog.last_comment.content }} </span>
-                    <br/>
-                    <small>— {{ blog.last_comment.user?.name }}, {{ blog.last_comment.created_at_readable }}</small>
-                </div>
-                <div v-else class="last-comment">
-                    <span class="last-comment-content">Be the first to comment!</span>
-                    </div>  
+            </div>
+            <div v-if="blog.last_comment" class="last-comment">
+                <h3>Most Recent Comment</h3>
+                <span class="last-comment-content"> {{ blog.last_comment.content }} </span>
+                <br />
+                <small>— {{ blog.last_comment.user?.name }}, {{ blog.last_comment.created_at_readable }}</small>
+            </div>
+            <div v-else class="last-comment">
+                <span class="last-comment-content">Be the first to comment!</span>
             </div>
         </div>
     </main>
 </template>
+
 
 
 <style scoped>
@@ -87,7 +142,8 @@ p {
     color: var(--color-text-1);
     font-weight: 400;
 }
-h3  {
+
+h3 {
     text-align: center;
 }
 
@@ -102,7 +158,8 @@ h3  {
     width: auto;
     min-width: 330px;
     max-width: 600px;
-    height: auto; /* Adjust height to accommodate more content */
+    height: auto;
+    /* Adjust height to accommodate more content */
     min-height: 520px;
     display: flex;
     flex-direction: column;
@@ -189,7 +246,58 @@ h3  {
     justify-content: space-between;
     align-items: center;
     padding: 4px 0;
-    gap: 1rem;
+    gap: 0.5rem;
+}
+
+
+.heart-icon {
+    display: flex;
+    align-items: center;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.heart-icon:hover {
+    transform: scale(1.2);
+}
+
+.heart-icon.liking {
+    animation: bounce 0.6s ease;
+}
+
+.heart-icon.unliking {
+    animation: shrink 0.6s ease;
+}
+
+@keyframes bounce {
+    0% {
+        transform: scale(1);
+    }
+
+    20% {
+        transform: scale(1.3);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    70% {
+        transform: scale(1.35);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes shrink {
+    0% {
+        transform: scale(1.35);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .edit-icon {
@@ -209,7 +317,7 @@ h3  {
 
 .comments-container {
     display: flex;
-    justify-content: center;
     align-items: center;
+    gap: 0.5em;
 }
 </style>

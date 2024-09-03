@@ -23,6 +23,9 @@ export type BLOG = {
     user?: USER
     last_comment?: COMMENT
     comments?: COMMENT[]
+    likes_count?: number
+    liked_by_user?: boolean
+    likes?: USER[]
     editMode?: boolean
 }
 
@@ -64,8 +67,4 @@ export type POSTS_RESPONSE = {
   data: BLOG[]
   links: LINKS
   meta: META
-}
-
-function ComputedRef<T>() {
-  throw new Error("Function not implemented.")
 }

@@ -13,57 +13,58 @@ const isLoading = ref(true);
 const selectedSort = ref('desc');
 
 onMounted(async () => {
-    
-    if(localStorage.getItem('page')) {
+
+    if (localStorage.getItem('page')) {
         isLoading.value = true;
 
         ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
         Blogs.value = ApiResponse.value.data as BLOG[];
-        BLOGS.value = {apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string)};
+        BLOGS.value = { apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string) };
         console.log(ApiResponse.value.meta.links);
         console.log('BLOGS', BLOGS.value);
         isLoading.value = false;
         return;
     }
-    if(BLOGS.value?.page) {
+    if (BLOGS.value?.page) {
         Blogs.value = BLOGS.value.apiResponse.data;
-    }else{
-    try {
-        ApiResponse.value = await importBlogs() as POSTS_RESPONSE;
-        Blogs.value = ApiResponse.value.data as BLOG[];
-        BLOGS.value = {apiResponse: ApiResponse.value, page: 1};
-        console.log('BLOGS', BLOGS.value);
-        
-    } catch (error) {
-        console.error('Error fetching blogs:', error);
-    } finally {
-        isLoading.value = false;
-    }}
+    } else {
+        try {
+            ApiResponse.value = await importBlogs() as POSTS_RESPONSE;
+            Blogs.value = ApiResponse.value.data as BLOG[];
+            BLOGS.value = { apiResponse: ApiResponse.value, page: 1 };
+            console.log('BLOGS', BLOGS.value);
+
+        } catch (error) {
+            console.error('Error fetching blogs:', error);
+        } finally {
+            isLoading.value = false;
+        }
+    }
 });
 
 // const userId = parseInt(localStorage.getItem('userId') as string);
 
 const setPage = async (pageUrl: string | null) => {
     console.log(pageUrl);
-    
+
     if (pageUrl) {
         console.log('man ', pageUrl);
 
         const pageNo = parseInt(pageUrl.split('page=')[1]);
 
         try {
-        ApiResponse.value = await importBlogs(pageUrl) as POSTS_RESPONSE;
-        Blogs.value = ApiResponse.value.data as BLOG[];
-        BLOGS.value = {apiResponse: ApiResponse.value, page:  pageNo};
-        localStorage.setItem('page', pageNo.toString())
-        console.log('BLOGS', BLOGS.value);
-        
-    } catch (error) {
-        console.error('Error fetching blogs:', error);
-    } finally {
-        isLoading.value = false;
-    }
-        
+            ApiResponse.value = await importBlogs(pageUrl) as POSTS_RESPONSE;
+            Blogs.value = ApiResponse.value.data as BLOG[];
+            BLOGS.value = { apiResponse: ApiResponse.value, page: pageNo };
+            localStorage.setItem('page', pageNo.toString())
+            console.log('BLOGS', BLOGS.value);
+
+        } catch (error) {
+            console.error('Error fetching blogs:', error);
+        } finally {
+            isLoading.value = false;
+        }
+
     }
 };
 
@@ -72,7 +73,7 @@ const onSortChange = async () => {
     try {
         ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
         Blogs.value = ApiResponse.value.data as BLOG[];
-        BLOGS.value = {apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string)};
+        BLOGS.value = { apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string) };
         console.log('BLOGS', BLOGS.value);
     }
     catch (error) {
@@ -86,23 +87,21 @@ const onSortChange = async () => {
 
 <template>
     <main class="display-home">
+
         <section class="home-body">
             <div class="home-header">
-            <h1>Featured Blogs</h1>
-            <select name="sort" id="sort" v-model="selectedSort" @change="onSortChange">
-                <option value="desc">Newest</option>
-                <option value="asc">Oldest</option>
-            </select>
-        </div>
+                <h1>Featured Blogs</h1>
+                <select name="sort" id="sort" v-model="selectedSort" @change="onSortChange">
+                    <option value="desc">Newest</option>
+                    <option value="asc">Oldest</option>
+                </select>
+            </div>
             <ListBlogs :blogs="Blogs" />
 
         </section>
         <footer v-if="!isLoading">
-            <PaginationBar :links="ApiResponse?.links" 
-            :meta_links="ApiResponse?.meta.links" 
-            @pageChange="setPage"
-            />
-            
+            <PaginationBar :links="ApiResponse?.links" :meta_links="ApiResponse?.meta.links" @pageChange="setPage" />
+
         </footer>
     </main>
 

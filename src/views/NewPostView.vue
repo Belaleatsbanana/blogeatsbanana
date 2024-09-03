@@ -31,7 +31,8 @@ const createPost = async () => {
   if (newImageFile.value) {
     formData.append('image', newImageFile.value);
   }
-
+  console.log(formData.get('image'));
+  
   try {
     const response = await axios.post(`/posts`, formData, {
       baseURL: API_URL,

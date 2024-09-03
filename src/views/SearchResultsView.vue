@@ -1,38 +1,61 @@
 <script setup lang="ts">
 import ListBlogs from '@/components/ListBlogs.vue';
-import { BLOGS, type BLOG } from '@/util/types/types';
-import { onMounted, ref } from 'vue';
+import { API_URL } from '@/util/constants';
+import { type BLOG, type POSTS_RESPONSE } from '@/util/types/types';
+import axios from 'axios';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-const Blogs = ref<BLOG[]>([]);
 const filteredBlogs = ref<BLOG[]>([]);
 const route = useRoute();
 
-const userId = parseInt(localStorage.getItem('userId') as string);
+const loadingQuery = ref(false)
 
-onMounted( () => {
-    Blogs.value = BLOGS.value?.apiResponse.data as BLOG[];
-    console.log(route.query.q?.toString().toLowerCase());
 
-    const searchQuery = route.query.q?.toString().toLowerCase() || '';
-    filteredBlogs.value = Blogs.value.filter(blog =>
-        (blog.title as string).toLowerCase().includes(searchQuery) ||
-        (blog.content as string).toLowerCase().includes(searchQuery)
-    );
-    filteredBlogs.value.map(blog => {
-        if (userId === blog.user?.id) {
-            blog.editMode = true;
+onMounted(() => {
+    loadingQuery.value = true
+})
+
+const searchQueryResult = async (query: string): Promise<POSTS_RESPONSE> => {
+    return await axios.get(`/posts/?search=${query}`, {
+        baseURL: API_URL,
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
         }
+    }).then((response) => {
+        loadingQuery.value = false;
+        return response.data;
+    }).catch((err) => {
+        console.log(err);
+        loadingQuery.value = false;
+        return [];
+    })
+}
+
+
+
+watch(() => route.query.q?.toString(), (newQuery) => {
+    console.log(newQuery);
+    loadingQuery.value = true
+    searchQueryResult(newQuery as string).then((response) => {
+        filteredBlogs.value = response.data;
+        console.log(filteredBlogs.value);
+        
+    }).catch((err) => {
+        console.log(err);
     });
-});
+
+}, { immediate: true });
+
+
 </script>
 
 <template>
-    <main class="display-home">
+    <main class="display-home" v-if="!loadingQuery">
         <section class="home-body">
-            <h1>Search Results</h1>
+            <h1>Search Results for {{route.query.q}}</h1>
             <ListBlogs :blogs="filteredBlogs" />
-
+            
         </section>
 
     </main>

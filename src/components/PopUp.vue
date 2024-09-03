@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { USER } from '@/util/types/types';
+
 const props = defineProps<{
     message: string;
     isInput?: boolean;
@@ -6,6 +8,7 @@ const props = defineProps<{
     modelValue?: string;
     mode?: 'create' | 'edit';
     commentId?: number;
+    likes?: USER[];
 }>();
 
 const emit = defineEmits<{
@@ -38,12 +41,22 @@ const handleSave = () => {
     <div v-if="props.visible" class="popup-overlay">
         <div class="popup-content">
             <p>{{ props.message }}</p>
+
+            <div v-if="props.likes?.length" class="likes-list">
+                <ul>
+                    <li v-for="like in props.likes" :key="like.id">{{ like.name }}</li>
+                </ul>
+            </div>
+
+
             <textarea v-if="props.isInput" :value="props.modelValue" @input="handleInput"
                 class="popup-input"></textarea>
+
             <div class="btn-group">
                 <button class="close-btn" @click="closePopup">Close</button>
                 <button v-if="props.isInput" class="close-btn" @click="handleSave">Save</button>
             </div>
+
         </div>
     </div>
 </template>
@@ -68,7 +81,7 @@ const handleSave = () => {
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     width: 70%;
-    max-width: 500px;
+    max-width: 300px;
     height: 60%;
     max-height: 500px;
     position: relative;
@@ -86,6 +99,31 @@ const handleSave = () => {
     font-size: 1.4rem;
     line-height: 1.6;
     margin-bottom: 1rem;
+    text-align: center;
+}
+
+.likes-list {
+    margin-bottom: 1rem;
+}
+
+.likes-list h3 {
+    font-size: 1.2rem;
+    color: var(--color-text-1);
+    margin-bottom: 0.5rem;
+}
+
+.likes-list ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.likes-list li {
+    border-radius: 8px;
+    padding: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    background-color: var(--color-background-1);
+    color: var(--color-text-1);
 }
 
 .popup-input {

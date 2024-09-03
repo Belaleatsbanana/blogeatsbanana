@@ -1,3 +1,102 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import type { COMMENT } from '@/util/types/types';
+import EditIcon from '@/components/icons/EditIcon.vue';
+import DeleteIcon from '@/components/icons/DeleteIcon.vue';
+import PopUp from '@/components/PopUp.vue';
+import axios from 'axios';
+import { API_URL } from '@/util/constants';
+
+const props = defineProps<{ 
+  comments: COMMENT[] | undefined;
+  userId: number; 
+  slug: string;
+  isBlogPoster: boolean }>();
+const emit = defineEmits<{ (e: 'refresh'): void; (e: 'close-sidebar'): void }>();
+
+const isPopUpVisible = ref(false);
+const popUpMessage = ref('Edit your comment');
+const popUpInput = ref<string>('');
+const currentCommentIndex = ref<number | null>(null);
+const commentId = ref<number>(0);
+const commentMode = ref<'create' | 'edit'>('create');
+
+const addComment = () => {
+  popUpMessage.value = "Add your comment";
+  popUpInput.value = '';
+  commentMode.value = 'create';
+  isPopUpVisible.value = true;
+};
+
+const editComment = (index: number) => {
+  popUpMessage.value = "Edit your comment";
+  popUpInput.value = props.comments?.[index].content || '';
+  commentId.value = props.comments?.[index].id || 0;
+  commentMode.value = 'edit';
+  currentCommentIndex.value = index;
+  isPopUpVisible.value = true;
+};
+
+const deleteComment = (index: number) => {
+  const commentId = props.comments?.[index].id;
+  if (commentId !== undefined) {
+    axios.delete(`posts/${props.slug}/comments/${commentId}`, {
+      baseURL: API_URL,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    }).then(() => {
+      emit('refresh');
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+};
+
+const handleSaveComment = () => {
+  const content = popUpInput.value;
+  if (currentCommentIndex.value !== null && commentMode.value === 'edit') {
+    saveComment({ id: props.comments?.[currentCommentIndex.value].id, content });
+  } else {
+    saveComment({ content });
+  }
+};
+
+const saveComment = (comment: { id?: number; content: string }) => {
+  if (comment.id !== undefined) {
+    updateCommentToApi(comment);
+  } else {
+    createNewCommentToApi(comment.content);
+  }
+  isPopUpVisible.value = false;
+};
+
+const createNewCommentToApi = (content: string) => {
+  axios.post(`/posts/${props.slug}/comments`, { content }, {
+    baseURL: API_URL,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  }).then(() => {
+    emit('refresh');
+  }).catch((error) => {
+    console.error(error);
+  });
+};
+
+const updateCommentToApi = (comment: { id?: number; content: string }) => {
+  axios.put(`/posts/${props.slug}/comments/${comment.id}`, { content: comment.content }, {
+    baseURL: API_URL,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
+    },
+  }).then(() => {
+    emit('refresh');
+  }).catch((error) => {
+    console.error(error);
+  });
+};
+</script>
 <template>
     <aside class="comments-sidebar">
       <div class="comments-header">
@@ -13,9 +112,9 @@
         <li v-for="(comment, index) in props.comments" :key="comment.id" class="comment-item">
           <div class="comment-content">
             <strong>{{ comment.user?.name }}:</strong> {{ comment.content }}
-            <div class="comment-actions" v-if="props.userId === comment.user?.id">
-              <EditIcon @click="editComment(index)" />
-              <DeleteIcon @click="deleteComment(index)" />
+            <div class="comment-actions" >
+              <EditIcon v-if="props.userId === comment.user?.id" @click="editComment(index)" />
+              <DeleteIcon v-if="props.userId === comment.user?.id || isBlogPoster" @click="deleteComment(index)" />
             </div>
           </div>
         </li>
@@ -35,102 +134,6 @@
     />
   </template>
   
-  <script setup lang="ts">
-  import { ref } from 'vue';
-  import { defineProps, defineEmits } from 'vue';
-  import type { COMMENT } from '@/util/types/types';
-  import EditIcon from '@/components/icons/EditIcon.vue';
-  import DeleteIcon from '@/components/icons/DeleteIcon.vue';
-  import PopUp from '@/components/PopUp.vue';
-  import axios from 'axios';
-  import { API_URL } from '@/util/constants';
-  
-  const props = defineProps<{ comments: COMMENT[] | undefined; userId: number; slug: string }>();
-  const emit = defineEmits<{ (e: 'refresh'): void; (e: 'close-sidebar'): void }>();
-  
-  const isPopUpVisible = ref(false);
-  const popUpMessage = ref('Edit your comment');
-  const popUpInput = ref<string>('');
-  const currentCommentIndex = ref<number | null>(null);
-  const commentId = ref<number>(0);
-  const commentMode = ref<'create' | 'edit'>('create');
-  
-  const addComment = () => {
-    popUpMessage.value = "Add your comment";
-    popUpInput.value = '';
-    commentMode.value = 'create';
-    isPopUpVisible.value = true;
-  };
-  
-  const editComment = (index: number) => {
-    popUpMessage.value = "Edit your comment";
-    popUpInput.value = props.comments?.[index].content || '';
-    commentId.value = props.comments?.[index].id || 0;
-    commentMode.value = 'edit';
-    currentCommentIndex.value = index;
-    isPopUpVisible.value = true;
-  };
-  
-  const deleteComment = (index: number) => {
-    const commentId = props.comments?.[index].id;
-    if (commentId !== undefined) {
-      axios.delete(`posts/${props.slug}/comments/${commentId}`, {
-        baseURL: API_URL,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      }).then(() => {
-        emit('refresh');
-      }).catch((error) => {
-        console.error(error);
-      });
-    }
-  };
-  
-  const handleSaveComment = () => {
-    const content = popUpInput.value;
-    if (currentCommentIndex.value !== null && commentMode.value === 'edit') {
-      saveComment({ id: props.comments?.[currentCommentIndex.value].id, content });
-    } else {
-      saveComment({ content });
-    }
-  };
-  
-  const saveComment = (comment: { id?: number; content: string }) => {
-    if (comment.id !== undefined) {
-      updateCommentToApi(comment);
-    } else {
-      createNewCommentToApi(comment.content);
-    }
-    isPopUpVisible.value = false;
-  };
-  
-  const createNewCommentToApi = (content: string) => {
-    axios.post(`/posts/${props.slug}/comments`, { content }, {
-      baseURL: API_URL,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    }).then(() => {
-      emit('refresh');
-    }).catch((error) => {
-      console.error(error);
-    });
-  };
-  
-  const updateCommentToApi = (comment: { id?: number; content: string }) => {
-    axios.put(`/posts/${props.slug}/comments/${comment.id}`, { content: comment.content }, {
-      baseURL: API_URL,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    }).then(() => {
-      emit('refresh');
-    }).catch((error) => {
-      console.error(error);
-    });
-  };
-  </script>
   
   <style scoped>
   .comments-sidebar {
