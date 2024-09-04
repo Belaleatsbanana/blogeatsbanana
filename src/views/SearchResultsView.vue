@@ -3,47 +3,88 @@ import ListBlogs from '@/components/ListBlogs.vue';
 import { API_URL } from '@/util/constants';
 import { type BLOG, type POSTS_RESPONSE } from '@/util/types/types';
 import axios from 'axios';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import PaginationBar from '@/components/PaginationBar.vue';
+import { importBlogs } from '@/util/methods';
 
 const filteredBlogs = ref<BLOG[]>([]);
 const route = useRoute();
 
 const loadingQuery = ref(false)
+const ApiResponse = ref<POSTS_RESPONSE>();
 
 
 onMounted(() => {
     loadingQuery.value = true
+
+    window.addEventListener('beforeunload', saveData)
 })
 
+onUnmounted(() => {
+    window.removeEventListener('beforeunload', saveData);
+})
+
+const saveData = () => {
+    
+    localStorage.setItem('searchPageNo', ApiResponse.value?.meta.current_page.toString() as string);
+}
+
 const searchQueryResult = async (query: string): Promise<POSTS_RESPONSE> => {
-    return await axios.get(`/posts/?search=${query}`, {
+
+    const pageNo = localStorage.getItem('searchPageNo') || 1;
+    console.log('pageNo', pageNo);
+    
+    return await axios.get(`/posts/?page=${pageNo}&search=${query}`, {
         baseURL: API_URL,
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
         }
     }).then((response) => {
-        loadingQuery.value = false;
         return response.data;
     }).catch((err) => {
         console.log(err);
-        loadingQuery.value = false;
         return [];
     })
 }
 
 
 
+const setPage = async (pageUrl: string | null) => {
+    console.log(pageUrl);
+
+    if (pageUrl) {
+        pageUrl += `&search=${route.query.q}`
+
+        console.log('man ', pageUrl);
+        try {
+            ApiResponse.value = await importBlogs(pageUrl) as POSTS_RESPONSE;
+            filteredBlogs.value = ApiResponse.value.data as BLOG[];
+
+        } catch (error) {
+            console.error('Error fetching blogs:', error);
+        } finally {
+            loadingQuery.value = false;
+        }
+
+    }
+};
+
 watch(() => route.query.q?.toString(), (newQuery) => {
     console.log(newQuery);
     loadingQuery.value = true
     searchQueryResult(newQuery as string).then((response) => {
+        
+        ApiResponse.value = response;
         filteredBlogs.value = response.data;
         console.log(filteredBlogs.value);
         
     }).catch((err) => {
         console.log(err);
-    });
+    }).finally(() => {
+        loadingQuery.value = false;
+        localStorage.removeItem('searchPageNo');
+    })
 
 }, { immediate: true });
 
@@ -55,9 +96,12 @@ watch(() => route.query.q?.toString(), (newQuery) => {
         <section class="home-body">
             <h1>Search Results for {{route.query.q}}</h1>
             <ListBlogs :blogs="filteredBlogs" />
-            
-        </section>
 
+        </section>
+        <footer v-if="!loadingQuery">
+            <PaginationBar :links="ApiResponse?.links" :meta_links="ApiResponse?.meta.links" @pageChange="setPage" />
+
+        </footer>
     </main>
 
 </template>

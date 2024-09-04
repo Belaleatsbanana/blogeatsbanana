@@ -109,19 +109,18 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = localStorage.getItem('token');
+  const isAuthenticated = localStorage.getItem('token')
 
   if (to.name === 'Comments' || to.name === 'MyPosts') {
-    next({ name: 'Home' });
+    next({ name: 'Home' })
   } else if (to.meta.requiresAuth && !isAuthenticated) {
-    localStorage.setItem('lastRoute', to.path);
-    next({ name: 'Login' });
+    localStorage.setItem('lastRoute', to.path)
+    next({ name: 'Login' })
   } else if (!to.meta.requiresAuth && isAuthenticated) {
-    next({ name: 'Home' });
+    next({ name: 'Home' })
   } else {
-    next();
+    next()
   }
-});
-
+})
 
 export default router
