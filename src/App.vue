@@ -1,25 +1,31 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import NavBar from './components/NavBar.vue'
 import { useRoute } from 'vue-router';
+import NavBar from './components/NavBar.vue'
 import BlogHeader from './components/BlogHeader.vue';
 
 const route = useRoute();
 
 const showNavBar = computed(() => route.meta.showNav);
 const showBlogHeader = computed(() => route.meta.showHeader);
+
 </script>
 
 <template>
+
   <main :class="{ 'with-navbar': showNavBar }" class="display-flex">
+
     <nav v-if="showNavBar">
       <NavBar />
     </nav>
+
     <section class="RouterView">
       <BlogHeader v-if="showBlogHeader" />
       <RouterView />
     </section>
+
   </main>
+  
 </template>
 
 <style scoped>

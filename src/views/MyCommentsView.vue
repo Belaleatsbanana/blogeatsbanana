@@ -1,4 +1,11 @@
 <script setup lang="ts">
+
+/**
+ * 
+ * ! unused View until user comments is implemented 
+ * 
+**/
+
 import BlogPreview from '@/components/BlogPreview.vue';
 import { importBlog, importBlogs } from '@/util/methods';
 import type { BLOG, COMMENT } from '@/util/types/types';

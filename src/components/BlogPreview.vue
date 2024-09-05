@@ -1,4 +1,10 @@
 <script setup lang="ts">
+/**
+ * 
+ * ! unused component until user comments is implemented 
+ * 
+**/
+
 import router from '@/router';
 import type { BLOG } from '@/util/types/types';
 import CommentsIcon from './icons/CommentsIcon.vue';

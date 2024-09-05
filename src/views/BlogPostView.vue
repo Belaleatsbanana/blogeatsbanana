@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { API_URL } from '@/util/constants';
+import { importBlog, likeBlog } from '@/util/methods';
+import type { BLOG } from '@/util/types/types';
 import axios from 'axios';
 import router from '@/router';
 import BlogComments from '@/components/BlogComments.vue';
 import EditIcon from '@/components/icons/EditIcon.vue';
 import DeleteIcon from '@/components/icons/DeleteIcon.vue';
 import HeartIcon from '@/components/icons/HeartIcon.vue';
-import { API_URL } from '@/util/constants';
-import { importBlog, likeBlog } from '@/util/methods';
-import type { BLOG } from '@/util/types/types';
 import defaultImage from "@/assets/BananaBlog.png";
 import Popup from '@/components/PopUp.vue';
 
@@ -26,6 +26,13 @@ const isBlogPoster = ref<boolean>();
 const likeHeaderMessage = ref('');
 const likePopupVisible = ref(false);
 
+
+onMounted(() => {
+  slug.value = route.params.slug as string;
+  fetchBlogPost();
+});
+
+
 const toggleComments = () => {
   showComments.value = !showComments.value;
 };
@@ -33,6 +40,7 @@ const toggleComments = () => {
 const closeComments = () => {
   showComments.value = false;
 };
+
 
 const apiRequest = (method: 'get' | 'post' | 'put' | 'delete', url: string, data?: any) => {
   return axios({
@@ -46,16 +54,22 @@ const apiRequest = (method: 'get' | 'post' | 'put' | 'delete', url: string, data
   });
 };
 
+
 const fetchBlogPost = async () => {
   try {
     blogPost.value = await importBlog(slug.value as string);
     isBlogPoster.value = userId === blogPost.value?.user?.id;
-
+    
   } catch (error) {
     console.error(error);
-    alert("Error fetching the blog post.");
+    
   }
 };
+
+const refresh = () => {
+  fetchBlogPost();
+};
+
 
 const editBlog = (slug?: string) => {
   if (slug) router.push({ name: "EditPost", params: { slug } });
@@ -68,21 +82,17 @@ const deleteBlog = async (slug?: string) => {
       router.push({ name: "Home" });
     } catch (error) {
       console.error(error);
-      alert("An error occurred while deleting the blog post. Please try again.");
     }
   }
 };
 
-const refresh = () => {
-  fetchBlogPost();
-};
 
 const toggleLikeBlog = (slug: string) => {
 
-    if (likeAnimation.value) return;
+  if (likeAnimation.value) return;
 
     const blog = blogPost.value;
-
+    
     if (blog) {
         likeAnimation.value = slug;
         likeAction.value = blog.liked_by_user ? 'unliking' : 'liking';
@@ -95,40 +105,36 @@ const toggleLikeBlog = (slug: string) => {
             likeAction.value = null;
 
             likeBlog(slug).then((result) => {
-
-                if(result)
-                    {console.log(result);
+              
+              if(result)
+                    {
                       fetchBlogPost();
                     }
                 else
                     blog.liked_by_user = !blog.liked_by_user;
 
             }).catch(() => {
-                blog.liked_by_user = !blog.liked_by_user;
+              blog.liked_by_user = !blog.liked_by_user;
             });
 
-        }, 1000); 
-    }
-};
-
-onMounted(() => {
-  slug.value = route.params.slug as string;
-  fetchBlogPost();
+          }, 1000); 
+        }
+      };
+      
   
-});
 
 const openLikes = () => {
   const likes = blogPost.value?.likes;
-  console.log(likes);
   
   if (likes?.length) {
-    console.log(likes[0].name);
     
     likeHeaderMessage.value = 'Likes';
-     likePopupVisible.value = true;
-  }else {
-    likeHeaderMessage.value = 'No likes yet';
     likePopupVisible.value = true;
+
+    }else {
+      likeHeaderMessage.value = 'No likes yet';
+      likePopupVisible.value = true;
+
   }
 };
 
@@ -138,50 +144,75 @@ const openLikes = () => {
 
 
 <template>
+
   <main>
+
+
     <section class="content">
+
       <img :src="blogPost?.image ? blogPost.image : imgSrc" alt="Blog Image" class="post-image" />
+
       <div class="header-wrapper">
+
         <h1>{{ blogPost?.title }}</h1>
+
         <div class="content-header">
           <div class="in-liner">
             <div class="blog-like" @click="openLikes">
+
               <HeartIcon :fillColor="blogPost?.liked_by_user ? 'red' : 'white'"
                 :strokeColor="blogPost?.liked_by_user ? 'red' : 'black'"
                 @click.stop="toggleLikeBlog(blogPost?.slug as string)"
                 :class="likeAction === 'liking' && likeAnimation === blogPost?.slug ? 'liking' : likeAction === 'unliking' && likeAnimation === blogPost?.slug ? 'unliking' : ''"
                 class="heart-icon" />
               <span>{{ blogPost?.likes_count }} Likes</span>
-            </div>
+
+            </div> <!-- Blog Heart Icon -->
+
             <div v-if="blogPost?.user?.id === userId" class="action-icons">
+
               <div @click="editBlog(blogPost?.slug)" class="edit-icon" title="Edit Blog">
                 <EditIcon />
-              </div>
+              </div> <!-- Edit Icon -->
+
               <div @click="deleteBlog(blogPost?.slug)" class="delete-icon" title="Delete Blog">
                 <DeleteIcon />
-              </div>
-            </div>
-          </div>
+              </div> <!-- Delete Icon -->
+
+            </div> <!-- Blog Manipulation Actions -->
+
+          </div> <!-- Blog Actions -->
+
           <div class="content-header-items">
             <span>By {{ blogPost?.user?.name }}</span>
             <span>Published: {{ blogPost?.created_at?.split('T')[0] }}</span>
             <span>Last Edited: {{ blogPost?.updated_at?.split('T')[0] }}</span>
-          </div>
-        </div>
-      </div>
+          </div> <!-- Blogger Details -->
+
+        </div> <!-- Content Header -->
+
+      </div> <!-- Blog Header -->
+
       <article>
         <p>{{ blogPost?.content }}</p>
       </article>
+
     </section>
 
     <div class="comments-icon" @click="toggleComments" title="Show/Hide Comments">
       💬
     </div>
+
+
     <BlogComments v-if="showComments" :comments="blogPost?.comments" :userId="userId" :slug="blogPost?.slug as string"
       :isBlogPoster="isBlogPoster as boolean" @refresh="refresh" @close-sidebar="closeComments" />
+
+
   </main>
+
   <Popup :visible="likePopupVisible" :message="likeHeaderMessage" :likes="blogPost?.likes"
     @update:visible="likePopupVisible = $event" />
+
 </template>
 
 

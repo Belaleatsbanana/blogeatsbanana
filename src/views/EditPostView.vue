@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import axios from 'axios';
 import { useRoute } from 'vue-router';
+import { API_URL, STATUS_CODES } from '@/util/constants';
 import { importBlog } from '@/util/methods';
+import axios from 'axios';
 import DeleteIcon from '@/components/icons/DeleteIcon.vue';
 import router from '@/router';
-import { API_URL, STATUS_CODES } from '@/util/constants';
 import PopUp from '@/components/PopUp.vue';
 
 import defaultImage from "@/assets/BananaBlog.png";
@@ -39,7 +39,9 @@ onMounted(async () => {
 });
 
 const updatePost = async () => {
-    disableButton.value = true;
+
+  disableButton.value = true;
+
   const formData = new FormData();
   formData.append('title', title.value);
   formData.append('content', content.value);
@@ -58,29 +60,33 @@ const updatePost = async () => {
     });
 
     if (response.status === STATUS_CODES.OK) {
-      console.log('Post updated successfully');
 
       if (newImageFile.value) {
         blogImage.value = URL.createObjectURL(newImageFile.value);
         // Revoke the old object URL if it exists
+
         if (objectUrl) {
           URL.revokeObjectURL(objectUrl);
         }
         objectUrl = blogImage.value;
+
       }
     }
-    router.push({name: 'BlogPost', params: {slug: slug.value}});
+    router.push({ name: 'BlogPost', params: { slug: slug.value } });
+
   } catch (error) {
     console.error('Error updating post:', error);
-  }finally{
+
+  } finally {
     disableButton.value = false;
+
   }
 };
 
 
 const deleteBlog = (slug?: string) => {
   if (slug) {
-    console.log("Delete blog:", slug);
+
     axios.delete(`/posts/${slug}`, {
       baseURL: API_URL,
       headers: {
@@ -88,8 +94,10 @@ const deleteBlog = (slug?: string) => {
       },
     }).then(() => {
       router.push({ name: "Home" });
+
     }).catch((error) => {
       console.error(error);
+
     });
   }
 };
@@ -109,6 +117,7 @@ const handleFileUpload = (event: Event) => {
       popupMessage.value = 'Invalid file type. Please select an image file.';
       visible.value = true;
       return;
+
     }
 
     newImageFile.value = file;
@@ -119,7 +128,6 @@ const handleFileUpload = (event: Event) => {
       URL.revokeObjectURL(objectUrl);
     }
     objectUrl = blogImage.value; // Store the new object URL for later cleanup
-    console.log('Selected file:', file);
   }
 };
 
@@ -129,186 +137,205 @@ onUnmounted(() => {
     URL.revokeObjectURL(objectUrl);
   }
 });
+
 </script>
 
 
 
 <template>
-    <main class="new-post">
-        <div class="in-liner">
-            <h1>Edit Post</h1>
-            <div class="delete-action" @click="deleteBlog(slug)">
-                <span>Delete Post</span>
-                <DeleteIcon />
-            </div>
-        </div>
-        <div class="image-upload-wrapper">
-            <img :src="blogImage ? blogImage : defaultimg" alt="Blog image" class="blog-image" @click="triggerFileInput" />
-            <input type="file" ref="fileInput" @change="handleFileUpload" class="file-input" />
-            <div class="edit-icon" @click="triggerFileInput">
-              <EditIcon />
-            </div>
-          </div>
-        <form @submit.prevent="updatePost" class="post-form">
-            <div class="form-group">
-                <label for="title">Title:</label>
-                <input type="text" id="title" v-model="title" placeholder="Enter post title" required />
-            </div>
 
-            <div class="form-group">
-                <label for="content">Content:</label>
-                <textarea id="content" v-model="content" placeholder="Write your post content here" rows="10"
-                    required></textarea>
-            </div>
 
-            <div class="form-actions">
-                <button type="submit" :disabled="disableButton">Save</button>
-            </div>
-        </form>
-        <PopUp :message="popupMessage" :visible="visible" @update:visible="visible = $event" />
-    </main>
+  <main class="new-post">
+
+    <div class="in-liner">
+
+      <h1>Edit Post</h1>
+
+      <div class="delete-action" @click="deleteBlog(slug)">
+        <span>Delete Post</span>
+        <DeleteIcon />
+      </div>
+
+    </div> <!-- Delete Blog Action -->
+
+    <div class="image-upload-wrapper">
+
+      <img :src="blogImage ? blogImage : defaultimg" alt="Blog image" class="blog-image" @click="triggerFileInput" />
+      <input type="file" ref="fileInput" @change="handleFileUpload" class="file-input" />
+
+      <div class="edit-icon" @click="triggerFileInput">
+        <EditIcon />
+      </div> <!-- Edit Icon -->
+
+    </div> <!-- Blog Image Edit Action -->
+
+    <form @submit.prevent="updatePost" class="post-form">
+
+      <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" id="title" v-model="title" placeholder="Enter post title" required />
+      </div> <!-- Form Title -->
+
+      <div class="form-group">
+        <label for="content">Content:</label>
+        <textarea id="content" v-model="content" placeholder="Write your post content here" rows="10"
+          required></textarea>
+      </div> <!-- Form Content -->
+
+      <div class="form-actions">
+        <button type="submit" :disabled="disableButton">Save</button>
+      </div> <!-- Form Submit Button -->
+
+    </form>
+
+    <PopUp :message="popupMessage" :visible="visible" @update:visible="visible = $event" />
+
+  </main>
+
+
 </template>
 
 <style scoped>
 .new-post {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 20px auto;
 }
 
 h1 {
-    font-size: 2rem;
-    color: #333;
+  font-size: 2rem;
+  color: #333;
 }
 
 .image-upload-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: 20px 0;
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px 0;
 }
 
 .blog-image {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 4px;
-    transition: filter 0.3s ease;
-    cursor: pointer;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 4px;
+  transition: filter 0.3s ease;
+  cursor: pointer;
 }
 
 .image-upload-wrapper:hover .blog-image {
-    filter: blur(3px);
+  filter: blur(3px);
 }
 
 .edit-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: none;
-    font-size: 1.5rem;
-    transition: opacity 0.3s ease;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
+  font-size: 1.5rem;
+  transition: opacity 0.3s ease;
 }
 
 .image-upload-wrapper:hover .edit-icon {
-    display: block;
-    opacity: 1;
+  display: block;
+  opacity: 1;
 }
 
 .file-input {
-    display: none;
+  display: none;
 }
 
 .in-liner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-    width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  width: 100%;
 }
 
 .delete-action {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    position: absolute;
-    right: 0;
-    padding: 8px;
-    border-radius: 4px;
-    transition: color 0.3s, background-color 0.3s, transform 0.3s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  position: absolute;
+  right: 0;
+  padding: 8px;
+  border-radius: 4px;
+  transition: color 0.3s, background-color 0.3s, transform 0.3s;
 }
 
 .delete-action:hover {
-    color: #EF2D56;
-    background-color: var(--color-background-1);
-    transform: scale(1.1);
+  color: #EF2D56;
+  background-color: var(--color-background-1);
+  transform: scale(1.1);
 }
 
 .post-form {
-    width: 100%;
+  width: 100%;
 }
 
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 label {
-    font-size: 1rem;
-    color: #444;
-    margin-bottom: 8px;
-    display: block;
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 8px;
+  display: block;
 }
 
 input[type="text"],
 textarea {
-    width: 100%;
-    padding: 10px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-    margin-top: 5px;
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-top: 5px;
 }
 
 textarea {
-    resize: vertical;
+  resize: vertical;
 }
 
 .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    background-color: #444140;
-    color: #fff;
-    transition: background-color 0.3s ease;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #444140;
+  color: #fff;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #EF2D56;
+  background-color: #EF2D56;
 }
+
 button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 </style>

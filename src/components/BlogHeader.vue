@@ -1,67 +1,85 @@
 <script setup lang="ts">
 
 import { onMounted, ref } from 'vue';
+import { importUser } from '@/util/methods';
+import type { USER } from '@/util/types/types';
 import DownArrowIcon from '@/components/icons/DownArrowIcon.vue';
 import ProfileIcon from '@/components/icons/ProfileIcon.vue';
 import RightArrowIcon from '@/components/icons/RightArrowIcon.vue';
-import { importUser } from '@/util/methods';
-import type { USER } from '@/util/types/types';
 import router from '@/router';
 
-const userInfo = ref<USER>({
+const searchQuery = ref('');
+const isDropdownVisible = ref(false);
+
+const userInfo  = ref<USER>({
     id: 0,
     name: '',
 });
 
-const searchQuery = ref('');
-
 onMounted(async () => {
+
     const user = await importUser();
+
     if (user.id) {
         userInfo.value = user;
         localStorage.setItem('userId', user.id.toString());
+
     } else {
         console.log('Failed to fetch user information.');
+
     }
 });
-const isDropdownVisible = ref(false);
 
 const toggleDropdown = () => {
     isDropdownVisible.value = !isDropdownVisible.value;
+
 };
 
 const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+
 };
 
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
         router.push({ name: 'SearchResults', query: { q: searchQuery.value.trim() } });
     }
+
 };
 
 </script>
 
 <template>
+
     <header class="blog-header">
+
+
         <div class="search-bar">
             <input v-model="searchQuery" placeholder="Search for blogs" />
             <button @click="handleSearch">Search</button>
         </div>
+
         <h1>BananaBlog</h1>
+
         <div class="profile-section" @click="toggleDropdown">
+
             <ProfileIcon />
             <span class="username">{{ userInfo.name }}</span>
             <DownArrowIcon v-show="isDropdownVisible" />
             <RightArrowIcon v-show="!isDropdownVisible" />
+            
             <div v-if="isDropdownVisible" class="dropdown-menu">
                 <ul>
                     <li><router-link to="/login" @click="logout">Logout</router-link></li>
                 </ul>
             </div>
+
         </div>
+
+
     </header>
+
 </template>
 
 <style scoped>

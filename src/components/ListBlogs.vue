@@ -1,14 +1,13 @@
-dd
 <script setup lang="ts">
+import { likeBlog } from "@/util/methods";
+import { computed, ref } from "vue";
+import type { BLOG } from "@/util/types/types";
 import CommentsIcon from "@/components/icons/CommentsIcon.vue";
 import router from "@/router";
-import { type BLOG } from "@/util/types/types";
 import EditIcon from "./icons/EditIcon.vue";
 import HeartIcon from "./icons/HeartIcon.vue";
-import { computed, ref } from "vue";
 
 import defaultImage from "@/assets/BananaBlog.png";
-import { likeBlog } from "@/util/methods";
 
 
 const props = defineProps<{
@@ -22,6 +21,8 @@ const userId = parseInt(localStorage.getItem("userId") as string);
 const likeAnimation = ref<string | null>(null);
 const likeAction = ref<string | null>(null);
 
+
+// compute editable blogs
 const gridBlogs = computed(() => {
 
     return props.blogs.map((blog) => {
@@ -68,7 +69,7 @@ const toggleLikeBlog = (slug: string) => {
 
             likeBlog(slug).then((result) => {
 
-                if(result)
+                if (result)
                     console.log(result);
                 else
                     blog.liked_by_user = !blog.liked_by_user;
@@ -77,7 +78,7 @@ const toggleLikeBlog = (slug: string) => {
                 blog.liked_by_user = !blog.liked_by_user;
             });
 
-        }, 1000); 
+        }, 1000);
     }
 };
 
@@ -85,51 +86,79 @@ const toggleLikeBlog = (slug: string) => {
 </script>
 
 <template>
+
     <main class="grid-container">
+
+
         <div class="grid-item" v-for="blog in gridBlogs" :key="blog.slug" @click="openBlog(blog.slug)">
+
             <img v-if="blog.image_thumb" :src="blog.image_thumb" alt="Blog image" class="blog-image" />
             <img v-else :src="imgSrc" alt="Blog img" class="blog-image" />
+
             <div class="item-content">
                 <h2 class="item-title">{{ blog.title }}</h2>
                 <p class="item-content">{{ blog.content }}</p>
-            </div>
+            </div> <!-- Blog Content -->
+
             <div class="blog-footer">
+
                 <div class="in-liner">
+
                     <span>Posted by: @{{ blog.user?.name }}</span>
                     <div class="in-liner">
+
                         <div v-if="blog.editMode" class="edit-icon" @click.stop="editBlog(blog.slug)">
                             <EditIcon />
-                        </div>
+                        </div> <!-- Blog Edit Icon-->
+
                         <div class="in-liner">
+
                             <div class="heart-icon" @click.stop="toggleLikeBlog(blog.slug as string)" :class="{
                                 'liking': likeAction === 'liking' && likeAnimation === blog.slug,
                                 'unliking': likeAction === 'unliking' && likeAnimation === blog.slug
                             }">
                                 <HeartIcon :strokeColor="blog.liked_by_user ? 'red' : 'black'"
                                     :fill-color="blog.liked_by_user ? 'red' : 'white'" />
-                            </div>
+                            </div> <!-- Blog Heart Icon -->
+
                             <span>{{ blog.likes_count }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
+                        </div> <!-- Blog Heart Details -->
+
+                    </div> <!-- Blog Actions -->
+
+                </div> <!-- Blogger Name & Blog Actions -->
+
+            </div> <!-- Blog Footer -->
+
             <div class="in-liner">
+
                 <span>Published : {{ blog.created_at?.split('T')[0] }}</span>
+
                 <div class="comments-container">
                     <CommentsIcon /> <span>{{ blog.comments_count }}</span>
-                </div>
-            </div>
+                </div> <!-- Comment Icon & Details -->
+
+            </div> <!-- Blog Date & Comment Details -->
+
             <div v-if="blog.last_comment" class="last-comment">
+
                 <h3>Most Recent Comment</h3>
                 <span class="last-comment-content"> {{ blog.last_comment.content }} </span>
                 <br />
                 <small>— {{ blog.last_comment.user?.name }}, {{ blog.last_comment.created_at_readable }}</small>
-            </div>
+
+            </div> <!-- Recent Comment Details if -->
+
             <div v-else class="last-comment">
                 <span class="last-comment-content">Be the first to comment!</span>
-            </div>
-        </div>
-    </main>
+            </div> <!-- Recent Comment Details else -->
+
+        </div> <!-- Blog Grid Item -->
+
+
+    </main> <!-- BLog Grid Container -->
+
 </template>
 
 

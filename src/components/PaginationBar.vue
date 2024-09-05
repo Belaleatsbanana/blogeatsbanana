@@ -16,15 +16,19 @@ const setPage = (pageUrl: string | null) => {
   if (pageUrl) {
     emit('pageChange', pageUrl);
   }
+
 };
 
 watch(() => props.meta_links, (newMetaLinks) => {
   paginationLinks.value = newMetaLinks as META_LINKS;
+
 }, { immediate: true });
 </script>
 
 <template>
+
   <nav class="pagination">
+    
     <button
       v-for="link in paginationLinks"
       :key="link.label"
@@ -34,7 +38,9 @@ watch(() => props.meta_links, (newMetaLinks) => {
     >
       <span v-html="link.label"></span>
     </button>
+    
   </nav>
+  
 </template>
 
 <style scoped>

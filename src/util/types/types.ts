@@ -1,5 +1,6 @@
 import { ref } from "vue"
 
+
 export type USER = {
   id?: number
   email?: string
@@ -7,6 +8,7 @@ export type USER = {
   password?: string
   password_confirmation?: string
 }
+
 
 export type BLOG = {
     id?: number
@@ -31,6 +33,7 @@ export type BLOG = {
 
 export const BLOGS = ref<{apiResponse : POSTS_RESPONSE, page : number}>()
 
+
 export type COMMENT = {
   id?: number
   content?: string
@@ -39,17 +42,21 @@ export type COMMENT = {
   user?: USER
 }
 
+
 export type LINKS = {
   first: string | null
   last: string | null
   prev: string | null
   next: string | null
 }
+
+
 export type META_LINKS = {
   url : string
   label : string
   active : boolean
 }[]
+
 
 export type META = {
   current_page: number

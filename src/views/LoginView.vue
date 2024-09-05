@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { API_URL, ROUTES } from '@/util/constants';
+import type { USER } from '@/util/types/types';
 import eyeIcon from '@/components/icons/eyeIcon.vue';
 import eyeOffIcon from '@/components/icons/eyeOffIcon.vue';
-import { type USER } from '@/util/types/types';
 import axios from 'axios';
-import { API_URL, ROUTES } from '@/util/constants';
 import router from '@/router';
 
 
@@ -15,6 +15,7 @@ const showPassword = ref(false);
 const unprocessedLogin = ref('');
 const unprocessedEmail = ref('');
 const unprocessedPassword = ref('');
+
 const togglePassword = () => {
     showPassword.value = !showPassword.value;
 };
@@ -59,19 +60,27 @@ const handleLogin = () => {
 </script>
 
 <template>
+
+
     <main>
+
         <div class="welcome-container">
+
             <img src="../assets/blog.jpg" alt="logo" />
             <h1>Welcome Back to BananaBlog!</h1>
             <p class="welcome-message">Sign in to continue sharing your experiences and creativity with the world.</p>
+
             <div class="signup-alignment">
                 <p>Don't have an account?</p>
                 <router-link to="/register">
                     <button class="signup-button">Create Account</button>
                 </router-link>
-            </div>
-        </div>
+            </div> <!-- Sign up Action -->
+
+        </div> <!-- Welcome Container -->
+
         <div class="login-container">
+
             <h2>Login</h2>
             <p v-if="unprocessedLogin">{{ unprocessedLogin }}</p>
             <form class="login-form" @submit.prevent>
@@ -79,23 +88,30 @@ const handleLogin = () => {
                 <div class="input-group">
                     <span class="unprocessed" v-if="unprocessedEmail">{{ unprocessedEmail }}</span>
                     <input type="email" placeholder="Enter Your Email" v-model="email" />
-                </div>
+                </div> <!-- Email Input Group -->
 
                 <div class="input-group password-group">
+
                     <span class="unprocessed" v-if="unprocessedPassword">{{ unprocessedPassword }}</span>
+
                     <div class="password-input">
                         <input :type="showPassword ? 'text' : 'password'" placeholder="Enter Your Password"
                             v-model="password" />
                         <span class="toggle-password" @click="togglePassword">
                             <component :is="showPassword ? eyeIcon : eyeOffIcon" />
                         </span>
-                    </div>
-                </div>
+                    </div> <!-- Password Input -->
+
+                </div> <!-- Password Input Group -->
 
                 <button type="submit" class="login-button" @click="handleLogin">Login</button>
             </form>
-        </div>
+
+        </div> <!-- Login Container -->
+
     </main>
+
+
 </template>
 
 <style scoped>

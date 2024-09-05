@@ -1,32 +1,40 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import HomeIcon from './icons/HomeIcon.vue';
 import PostIcon from './icons/PostIcon.vue';
 import MyPostsIcon from './icons/MyPostsIcon.vue';
 import CommentsIcon from './icons/CommentsIcon.vue';
-import { ref } from 'vue';
 
 const isMyPostsDisabled = ref(true);
 const isCommentsDisabled = ref(true);
+
 </script>
 
 <template>
+    
     <main class="navbar-container">
+
         <header class="navbar-header">
+
             <img src="../assets/blog.jpg" alt="logo" class="navbar-img" />
             <h5>BananaBlog</h5>
+
         </header>
 
         <nav class="navbar">
+
             <ul class="column-bar">
+
                 <li><router-link to="/home">
                         <HomeIcon class="icon" height="20px" width="20px" />
                         <span>Dashboard</span>
-                    </router-link></li>
+                    </router-link>
+                </li>
                 <li><router-link to="/post">
                         <PostIcon class="icon" height="25px" width="25px" />
                         <span>New Post</span>
-                    </router-link></li>
-
+                    </router-link>
+                </li>
                 <li>
                     <router-link v-if="!isMyPostsDisabled" to="/myposts">
                         <MyPostsIcon class="icon" height="25px" width="25px" />
@@ -37,7 +45,6 @@ const isCommentsDisabled = ref(true);
                         <span>My Posts</span>
                     </span>
                 </li>
-
                 <li>
                     <router-link v-if="!isCommentsDisabled" to="/comments">
                         <CommentsIcon class="icon" height="25px" width="25px" />
@@ -49,12 +56,15 @@ const isCommentsDisabled = ref(true);
                     </span>
                 </li>
             </ul>
+
         </nav>
 
         <footer>
             <p>&copy; BananaBlog 2024</p>
         </footer>
+
     </main>
+
 </template>
 
 <style scoped>

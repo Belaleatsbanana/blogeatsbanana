@@ -7,10 +7,10 @@ import type { BLOG, POSTS_RESPONSE } from '@/util/types/types';
 import { BLOGS } from '@/util/types/types';
 import { onMounted, ref } from 'vue';
 
-const ApiResponse = ref<POSTS_RESPONSE>();
-const Blogs = ref<BLOG[]>([]);
-const isLoading = ref(true);
-const selectedSort = ref('desc');
+const ApiResponse   = ref<POSTS_RESPONSE>();
+const Blogs         = ref<BLOG[]>([]);
+const isLoading     = ref(true);
+const selectedSort  = ref('desc');
 
 onMounted(async () => {
 
@@ -18,37 +18,36 @@ onMounted(async () => {
         isLoading.value = true;
 
         ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
+
         Blogs.value = ApiResponse.value.data as BLOG[];
         BLOGS.value = { apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string) };
-        console.log(ApiResponse.value.meta.links);
-        console.log('BLOGS', BLOGS.value);
+
         isLoading.value = false;
         return;
     }
     if (BLOGS.value?.page) {
         Blogs.value = BLOGS.value.apiResponse.data;
+
     } else {
         try {
             ApiResponse.value = await importBlogs() as POSTS_RESPONSE;
+
             Blogs.value = ApiResponse.value.data as BLOG[];
             BLOGS.value = { apiResponse: ApiResponse.value, page: 1 };
-            console.log('BLOGS', BLOGS.value);
 
         } catch (error) {
             console.error('Error fetching blogs:', error);
+
         } finally {
             isLoading.value = false;
         }
     }
 });
 
-// const userId = parseInt(localStorage.getItem('userId') as string);
 
 const setPage = async (pageUrl: string | null) => {
-    console.log(pageUrl);
 
     if (pageUrl) {
-        console.log('man ', pageUrl);
 
         const pageNo = parseInt(pageUrl.split('page=')[1]);
 
@@ -57,7 +56,6 @@ const setPage = async (pageUrl: string | null) => {
             Blogs.value = ApiResponse.value.data as BLOG[];
             BLOGS.value = { apiResponse: ApiResponse.value, page: pageNo };
             localStorage.setItem('page', pageNo.toString())
-            console.log('BLOGS', BLOGS.value);
 
         } catch (error) {
             console.error('Error fetching blogs:', error);
@@ -74,7 +72,7 @@ const onSortChange = async () => {
         ApiResponse.value = await importBlogs(`${API_URL}/posts?page=${BLOGS.value?.page}&sort=${selectedSort.value}`) as POSTS_RESPONSE;
         Blogs.value = ApiResponse.value.data as BLOG[];
         BLOGS.value = { apiResponse: ApiResponse.value, page: parseInt(localStorage.getItem('page') as string) };
-        console.log('BLOGS', BLOGS.value);
+        
     }
     catch (error) {
         console.error('Error fetching blogs:', error);
@@ -89,6 +87,7 @@ const onSortChange = async () => {
     <main class="display-home">
 
         <section class="home-body">
+
             <div class="home-header">
                 <h1>Featured Blogs</h1>
                 <select name="sort" id="sort" v-model="selectedSort" @change="onSortChange">
@@ -96,13 +95,15 @@ const onSortChange = async () => {
                     <option value="asc">Oldest</option>
                 </select>
             </div>
+
             <ListBlogs :blogs="Blogs" />
 
         </section>
+
         <footer v-if="!isLoading">
             <PaginationBar :links="ApiResponse?.links" :meta_links="ApiResponse?.meta.links" @pageChange="setPage" />
-
         </footer>
+        
     </main>
 
 </template>

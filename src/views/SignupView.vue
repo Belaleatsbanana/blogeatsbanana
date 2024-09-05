@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { API_URL, ROUTES } from '@/util/constants';
+import { type USER } from '@/util/types/types'
 import eyeIcon from '@/components/icons/eyeIcon.vue';
 import eyeOffIcon from '@/components/icons/eyeOffIcon.vue';
-import { type USER } from '@/util/types/types'
 import axios from 'axios';
-import { API_URL, ROUTES } from '@/util/constants';
 import router from '@/router';
 
 const name = ref('');
@@ -27,10 +27,12 @@ const toggleConfirmPassword = () => {
 };
 
 const handleSignup = () => {
+
     unprocessedEmail.value = '';
     unprocessedName.value = '';
     unprocessedPassword.value = '';
     unprocessedConfirmPassword.value = '';
+
     const user: USER = {
         name: name.value,
         email: email.value,
@@ -49,11 +51,14 @@ const handleSignup = () => {
         if (lastRoute) {
             localStorage.removeItem('lastRoute');
             router.push(lastRoute);
+
         } else {
             router.push(ROUTES.HOME);
+
         }
     }).catch((err) => {
         if (err.response.status === 422) {
+
             if (err.response.data.errors.email) {
                 unprocessedEmail.value = err.response.data.errors.email[0];
             }
@@ -72,10 +77,12 @@ const handleSignup = () => {
                 }
 
             }
+
             name.value = '';
             email.value = '';
             password.value = '';
             confirmPassword.value = '';
+
         }
     });
 
@@ -84,58 +91,83 @@ const handleSignup = () => {
 
 
 <template>
+
+
     <main>
+
         <div class="welcome-container">
+
             <img src="../assets/blog.jpg" alt="logo" />
             <h1>Welcome to BananaBlog!</h1>
             <p class="welcome-message">Create an account to start writing your own blog posts, share your experiences,
                 express your creativity, or connect with others.</p>
+
             <div class="login-alignment">
                 <p>Already have an account?</p>
                 <router-link to="/login">
                     <button class="login-button">Login</button>
                 </router-link>
-            </div>
-        </div>
+            </div> <!-- Login Action -->
+
+        </div> <!-- Welcome Container -->
 
         <div class="signup-container">
+
             <h2>Create Account</h2>
 
             <form class="signup-form" @submit.prevent>
+
                 <div class="input-group">
                     <span class="unprocessed" v-if="unprocessedName">{{ unprocessedName }}</span>
                     <input type="text" placeholder="Enter Your Name" v-model="name" />
-                </div>
+                </div> <!-- Name Input Group -->
 
                 <div class="input-group">
                     <span class="unprocessed" v-if="unprocessedEmail">{{ unprocessedEmail }}</span>
                     <input type="email" placeholder="Enter Your Email" v-model="email" />
-                </div>
+                </div> <!-- Email Input Group -->
 
                 <div class="input-group password-group">
+
                     <span class="unprocessed" v-if="unprocessedPassword">{{ unprocessedPassword }}</span>
+
                     <div class="password-input">
+
                         <input :type="showPassword ? 'text' : 'password'" placeholder="Enter Your Password"
                             v-model="password" />
                         <span class="toggle-password" @click="togglePassword">
                             <component :is="showPassword ? eyeIcon : eyeOffIcon" />
                         </span>
-                    </div>
-                </div>
+
+                    </div> <!-- Password Input -->
+
+                </div> <!-- Password Input Group -->
+
                 <div class="input-group password-group">
+
                     <span class="unprocessed" v-if="unprocessedConfirmPassword">{{ unprocessedConfirmPassword }}</span>
+
                     <div class="password-input">
+
                         <input :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm Your Password"
                             v-model="confirmPassword" class="password-input" />
                         <span class="toggle-password" @click="toggleConfirmPassword">
                             <component :is="showConfirmPassword ? eyeIcon : eyeOffIcon" />
                         </span>
-                    </div>
-                </div>
+
+                    </div> <!-- Confirm Passowrd Input -->
+
+                </div> <!-- Confirm Password Input Group -->
+
                 <button type="submit" class="signup-button" @click="handleSignup">Sign Up</button>
+
             </form>
-        </div>
+
+        </div> <!-- Sign up Container -->
+
     </main>
+
+
 </template>
 
 <style scoped>

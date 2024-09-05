@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { USER } from '@/util/types/types';
 
+
 const props = defineProps<{
     message: string;
     isInput?: boolean;
@@ -11,20 +12,24 @@ const props = defineProps<{
     likes?: USER[];
 }>();
 
+
 const emit = defineEmits<{
     (event: 'update:visible', value: boolean): void;
     (event: 'update:modelValue', value: string): void;
     (event: 'save', comment: { id?: number; content: string }): void;
 }>();
 
+
 const closePopup = () => {
     emit('update:visible', false);
 };
+
 
 const handleInput = (event: Event) => {
     const textareaElement = event.target as HTMLTextAreaElement;
     emit('update:modelValue', textareaElement.value);
 };
+
 
 const handleSave = () => {
     const content = props.modelValue || '';
@@ -35,11 +40,15 @@ const handleSave = () => {
     }
     closePopup();
 };
+
 </script>
 
 <template>
+
     <div v-if="props.visible" class="popup-overlay">
+
         <div class="popup-content">
+
             <p>{{ props.message }}</p>
 
             <div v-if="props.likes?.length" class="likes-list">
@@ -58,7 +67,9 @@ const handleSave = () => {
             </div>
 
         </div>
+
     </div>
+    
 </template>
 
 <style scoped>

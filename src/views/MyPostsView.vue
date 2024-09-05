@@ -1,4 +1,11 @@
 <script setup lang="ts">
+
+/**
+ * 
+ * ! unused View until user posts is implemented 
+ * 
+**/
+
 import ListBlogs from '@/components/ListBlogs.vue';
 import { importBlogs } from '@/util/methods';
 import type { BLOG } from '@/util/types/types';

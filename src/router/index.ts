@@ -113,13 +113,17 @@ router.beforeEach((to, from, next) => {
 
   if (to.name === 'Comments' || to.name === 'MyPosts') {
     next({ name: 'Home' })
+
   } else if (to.meta.requiresAuth && !isAuthenticated) {
     localStorage.setItem('lastRoute', to.path)
     next({ name: 'Login' })
+
   } else if (!to.meta.requiresAuth && isAuthenticated) {
     next({ name: 'Home' })
+
   } else {
     next()
+    
   }
 })
 
